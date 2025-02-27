@@ -7,45 +7,180 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+            transition: background-color 2s ease;
+            background-color: #004d66;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 90%;
+            width: 800px;
+            padding: 10px;
+            position: relative;
+            z-index: 10;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: min(2.5rem, 5vw);
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .poem-container {
+            margin-bottom: 20px;
+            flex-grow: 1;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            max-height: calc(100vh - 220px);
+        }
+
+        .stanza {
+            margin-bottom: 8px;
+            opacity: 0;
+            transition: opacity 2s ease;
+            font-size: min(1.1rem, 2.5vw);
+            line-height: 1.4;
+        }
+
+        .visible {
+            opacity: 1;
+        }
+
+        .instructions {
+            font-style: italic;
+            margin-bottom: 10px;
+            font-size: min(1rem, 2.5vw);
+        }
+
+        .mussels-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            overflow: hidden;
+        }
+
+        .mussel {
+            position: absolute;
+            bottom: 0;
+            width: 45px;
+            height: 35px;
+            opacity: 0;
+            transition: opacity 1s ease;
+            background-image: url('mussel.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+
+        .mussel.visible {
+            opacity: 1;
+        }
+
+        @media (max-height: 700px) {
+            .stanza {
+                margin-bottom: 4px;
+                font-size: min(0.9rem, 2.2vw);
+                line-height: 1.3;
+            }
+            h1 {
+                font-size: min(2rem, 4.5vw);
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+            .instructions {
+                margin-bottom: 5px;
+            }
+            .mussels-container {
+                height: 100px;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .stanza {
+                margin-bottom: 2px;
+                font-size: min(0.7rem, 2vw);
+                line-height: 1.2;
+            }
+            h1 {
+                font-size: min(1.5rem, 4vw);
+                margin-top: 2px;
+                margin-bottom: 2px;
+            }
+            .instructions {
+                font-size: min(0.8rem, 2vw);
+                margin-bottom: 2px;
+            }
+            .mussels-container {
+                height: 80px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h1>The Invasion of Zebra Mussels in the Great Lakes</h1>
+
     <div class="instructions">(Click anywhere to continue the poem)</div>
+
     <div class="poem-container">
         <div class="stanza" id="stanza1">
             Tiny shells that stick to stone,<br>
             Invisible invaders, never alone.
         </div>
+
         <div class="stanza" id="stanza2">
             A stowaway in the ballasts of ships is where they came,<br>
             Making humans sole to blame.<br>
             From the Caspian Sea to the Great Lakes, a distant trip,<br>
             Brought to the Great Lakes, enriched with nutrients, which would soon be stripped.
         </div>
+
         <div class="stanza" id="stanza3">
             The tiny traveler, Zebra mussels descend,<br>
             Into the deep blues where light ends.
         </div>
+
         <div class="stanza" id="stanza4">
             With no predators to contest,<br>
             They colonized rocks and spread.<br>
             They clung to the pylons, they smothered the sand,<br>
             Until the bottom lined with shells, no one would have planned.
         </div>
+
         <div class="stanza" id="stanza5">
             They filter the water, clear and clean,<br>
             A deceptive gift, not as good as it seems.<br>
             Stripping the waters with insatiable needs,<br>
             Disrupting the balance as native life pleads.
         </div>
+
         <div class="stanza" id="stanza6">
             Filtering plankton, the smallest of things,<br>
             They hollowed the food chain, unthreading its strings.<br>
             Native species outcompeted, imbalance it brings,<br>
             Zebra Mussels usurp native species, like a malevolent king.
         </div>
+
         <div class="stanza" id="stanza7">
             Water clear, but nutrients thinned,<br>
             They strangle out the life from within.<br>
@@ -58,6 +193,79 @@
 
 <div class="mussels-container" id="mussels-container"></div>
 
-<script src="index.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const stanzas = document.querySelectorAll('.stanza');
+        const musselsContainer = document.getElementById('mussels-container');
+        const body = document.body;
+        const containerWidth = musselsContainer.offsetWidth;
+
+        let currentStanza = 0;
+        let musselCount = 0;
+        let waterOpacity = 0;
+
+        function updateWaterColor() {
+            const startColor = {r: 0, g: 77, b: 102}; // #004d66
+            const endColor = {r: 153, g: 204, b: 255}; // #99ccff
+
+            const r = Math.round(startColor.r + (endColor.r - startColor.r) * waterOpacity);
+            const g = Math.round(startColor.g + (endColor.g - startColor.g) * waterOpacity);
+            const b = Math.round(startColor.b + (endColor.b - startColor.b) * waterOpacity);
+
+            body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function getRandomPosition() {
+            return {
+                x: Math.random() * (containerWidth - 40),
+                y: Math.random() * 60
+            };
+        }
+
+        function addMussels(count) {
+            const maxMussels = 2000;
+            const actualCount = Math.min(count, maxMussels);
+
+            for (let i = 0; i < actualCount; i++) {
+                const mussel = document.createElement('div');
+                mussel.className = 'mussel';
+
+                const position = getRandomPosition();
+                mussel.style.left = `${position.x}px`;
+                mussel.style.bottom = `${position.y}px`;
+
+                const rotation = (Math.random() * 40) - 20; // -20 to +20 degrees
+                mussel.style.transform = `rotate(${rotation}deg)`;
+
+                const sizeVariation = 0.5 + (Math.random() * 0.4); // 0.5 to 0.9 (smaller overall)
+                mussel.style.transform += ` scale(${sizeVariation})`;
+
+                musselsContainer.appendChild(mussel);
+
+                setTimeout(() => {
+                    mussel.classList.add('visible');
+                }, 20 * Math.min(i, 100));
+            }
+        }
+
+        function progressPoem() {
+            if (currentStanza < stanzas.length) {
+                stanzas[currentStanza].classList.add('visible');
+
+                waterOpacity = Math.min(0.9, waterOpacity + (1 / stanzas.length));
+                updateWaterColor();
+
+                const newMussels = musselCount === 0 ? 1 : musselCount * 3;
+                addMussels(newMussels);
+                musselCount = newMussels;
+
+                currentStanza++;
+            }
+        }
+
+        document.addEventListener('click', progressPoem);
+
+    });
+</script>
 </body>
 </html>
